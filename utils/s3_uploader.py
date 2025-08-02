@@ -26,3 +26,21 @@ class S3Uploader:
         except Exception as e:
             print(f"Upload failed: {e}")
             return False
+    
+    def upload_dataframe(self, df, filename: str) -> bool:
+        """Upload pandas DataFrame as CSV to S3"""
+        try:
+            key = f"raw-data/{filename}"
+            csv_buffer = df.to_csv(index=False)
+            
+            self.s3_client.put_object(
+                Bucket=self.bucket_name,
+                Key=key,
+                Body=csv_buffer,
+                ContentType='text/csv'
+            )
+            print(f"Data uploaded to s3://{self.bucket_name}/{key}")
+            return True
+        except Exception as e:
+            print(f"Upload failed: {e}")
+            return False
