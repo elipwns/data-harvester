@@ -1,0 +1,11 @@
+.env
+__pycache__/
+*.pyc
+.serverless/
+node_modules/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars
