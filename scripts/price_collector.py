@@ -29,35 +29,46 @@ class PriceCollector:
             'US_STOCKS': {
                 'SPY': 'SPY',  # S&P 500 ETF
                 'QQQ': 'QQQ',  # NASDAQ ETF
-                'VTI': 'VTI'   # Total Stock Market ETF
+                'VTI': 'VTI',  # Total Stock Market ETF
+                'TSLA': 'TSLA' # Tesla for Tesla Watch page
             }
         }
     
     def get_crypto_prices(self) -> dict:
-        """Get crypto prices from CoinGecko (free API)"""
+        """Get crypto prices from CoinGecko with enhanced ML features"""
         crypto_data = {}
         
         try:
-            # CoinGecko API - free, no key required
+            # Enhanced CoinGecko API call with more data
             url = "https://api.coingecko.com/api/v3/simple/price"
             params = {
                 'ids': 'bitcoin,ethereum',
                 'vs_currencies': 'usd',
                 'include_market_cap': 'true',
-                'include_24hr_change': 'true'
+                'include_24hr_change': 'true',
+                'include_24hr_vol': 'true',
+                'include_last_updated_at': 'true'
             }
             
             response = requests.get(url, params=params)
             response.raise_for_status()
             data = response.json()
             
-            # Format crypto data
+            # Format crypto data with ML features
             for coin_id, coin_data in data.items():
                 symbol = 'BTC' if coin_id == 'bitcoin' else 'ETH'
+                price = coin_data['usd']
+                volume_24h = coin_data.get('usd_24h_vol', 0)
+                change_24h = coin_data.get('usd_24h_change', 0)
+                
                 crypto_data[symbol] = {
-                    'price': coin_data['usd'],
+                    'price': price,
                     'market_cap': coin_data.get('usd_market_cap', 0),
-                    'change_24h': coin_data.get('usd_24h_change', 0)
+                    'change_24h': change_24h,
+                    'volume_24h': volume_24h,
+                    'volatility': abs(change_24h),  # Simple volatility measure
+                    'volume_price_ratio': volume_24h / price if price > 0 else 0,
+                    'last_updated': coin_data.get('last_updated_at', 0)
                 }
                 
         except Exception as e:
@@ -71,20 +82,29 @@ class PriceCollector:
         
         try:
             # Using Yahoo Finance API (free, unofficial)
-            symbols = ['SPY', 'QQQ', 'VTI']
+            symbols = ['SPY', 'QQQ', 'VTI', 'TSLA']
             
             for i, symbol in enumerate(symbols):
-                # Add delay between requests to avoid rate limits
+                # Add longer delay between requests to avoid rate limits
                 if i > 0:
                     import time
-                    time.sleep(2)
+                    time.sleep(5)  # Increased delay
                 
                 url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
-                response = requests.get(url)
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                }
+                response = requests.get(url, headers=headers)
                 
                 if response.status_code == 429:
-                    print(f"Rate limited for {symbol}, skipping...")
-                    continue
+                    print(f"Rate limited for {symbol}, waiting 30 seconds...")
+                    import time
+                    time.sleep(30)
+                    # Retry once
+                    response = requests.get(url, headers=headers)
+                    if response.status_code == 429:
+                        print(f"Still rate limited for {symbol}, skipping...")
+                        continue
                     
                 response.raise_for_status()
                 data = response.json()
@@ -103,15 +123,16 @@ class PriceCollector:
                     
         except Exception as e:
             print(f"Error fetching stock prices: {e}")
+            # Continue with crypto data even if stocks fail
         
         return stock_data
     
     def collect_all_prices(self) -> pd.DataFrame:
-        """Collect all price data and return as DataFrame"""
+        """Collect enhanced price data with ML features"""
         timestamp = datetime.utcnow()
         all_data = []
         
-        # Get crypto prices
+        # Get crypto prices with enhanced features
         crypto_prices = self.get_crypto_prices()
         for symbol, data in crypto_prices.items():
             all_data.append({
@@ -120,6 +141,9 @@ class PriceCollector:
                 'symbol': symbol,
                 'price': data['price'],
                 'change_24h': data['change_24h'],
+                'volume_24h': data.get('volume_24h', 0),
+                'volatility': data.get('volatility', 0),
+                'volume_price_ratio': data.get('volume_price_ratio', 0),
                 'market_cap': data.get('market_cap', 0),
                 'data_type': 'price'
             })
@@ -133,6 +157,9 @@ class PriceCollector:
                 'symbol': symbol,
                 'price': data['price'],
                 'change_24h': data['change_24h'],
+                'volume_24h': 0,  # Not available from Yahoo Finance simple API
+                'volatility': abs(data['change_24h']),
+                'volume_price_ratio': 0,
                 'market_cap': 0,  # Not applicable for ETFs
                 'data_type': 'price'
             })
@@ -159,9 +186,9 @@ class PriceCollector:
             success = self.s3_uploader.upload_dataframe(df, filename)
             
             if success:
-                print(f"✅ Successfully uploaded price data to S3: {filename}")
+                print(f"Successfully uploaded price data to S3: {filename}")
             else:
-                print("❌ Failed to upload price data to S3")
+                print("Failed to upload price data to S3")
                 
         except Exception as e:
             print(f"Error in price collection: {e}")
