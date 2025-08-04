@@ -3,6 +3,7 @@ __pycache__/
 *.pyc
 .serverless/
 node_modules/
+automation_log.txt
 
 # Terraform
 .terraform/

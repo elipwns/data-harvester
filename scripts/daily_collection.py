@@ -16,12 +16,21 @@ def main():
     reddit_scraper = RedditScraper()
     reddit_scraper.run_scrape_and_upload()
     
+    # Collect Bluesky data
+    print("\n2. Collecting Bluesky sentiment data...")
+    try:
+        from bluesky_scraper import BlueskyScraper
+        bluesky_scraper = BlueskyScraper()
+        bluesky_scraper.run_scrape_and_upload()
+    except Exception as e:
+        print(f"Bluesky collection failed (non-critical): {e}")
+    
     # Collect price data
-    print("\n2. Collecting price data...")
+    print("\n3. Collecting price data...")
     price_collector = PriceCollector()
     price_collector.run_collection_and_upload()
     
-    print("\n✅ Daily collection complete!")
+    print("\nDaily collection complete!")
     print("Next: Run AI workbench to process the data")
 
 if __name__ == "__main__":

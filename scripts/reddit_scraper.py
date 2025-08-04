@@ -25,6 +25,13 @@ class RedditScraper:
         )
         self.s3_uploader = S3Uploader()
         
+        # Financial keywords for filtering news posts
+        self.financial_keywords = {
+            'companies': ['tesla', 'apple', 'microsoft', 'google', 'amazon', 'meta', 'nvidia', 'bitcoin', 'ethereum'],
+            'tickers': ['tsla', 'aapl', 'msft', 'googl', 'amzn', 'meta', 'nvda', 'btc', 'eth'],
+            'financial_terms': ['stock', 'shares', 'earnings', 'revenue', 'profit', 'market', 'trading', 'investment', 'crypto', 'ipo']
+        }
+        
         # Financial subreddits organized by market category
         self.subreddit_categories = {
             'US_STOCKS': [
@@ -32,7 +39,14 @@ class RedditScraper:
                 'investing',         # Conservative investing
                 'stocks',           # General stock discussion
                 'SecurityAnalysis', # Fundamental analysis
-                'ValueInvesting'    # Value investing approach
+                'ValueInvesting',    # Value investing approach
+                'deepfuckingvalue',  # DFV/GME community
+                'shortsqueeze',      # Short squeeze plays
+                'smallstreetbets',   # Smaller account trading
+                'thetagang',         # Options selling strategies
+                'wsbafterhours',     # After-hours WSB discussion
+                'wallstreetbetselite', # WSB alternative
+                'options'            # Options trading
             ],
             'CRYPTO': [
                 'cryptocurrency',   # General crypto discussion
@@ -42,7 +56,15 @@ class RedditScraper:
             ],
             'ECONOMICS': [
                 'economics',        # Economic policy/macro
-                'financialindependence'  # Long-term wealth sentiment
+                'financialindependence',  # Long-term wealth sentiment
+                'atrioc'           # Streamer community - politics/stocks/current events
+            ],
+            'NEWS': [
+                'news',            # General news with market impact
+                'technology',      # Tech company developments
+                'business',        # Business news and analysis
+                'worldnews',       # Global events affecting markets
+                'politics'         # Policy changes affecting sectors
             ]
         }
         
@@ -50,6 +72,17 @@ class RedditScraper:
         self.subreddits = []
         for category, subs in self.subreddit_categories.items():
             self.subreddits.extend(subs)
+    
+    def is_financially_relevant(self, title, content):
+        """Check if a post contains financial keywords"""
+        text = f"{title} {content}".lower()
+        
+        # Check for any financial keywords
+        for keyword_list in self.financial_keywords.values():
+            for keyword in keyword_list:
+                if keyword in text:
+                    return True
+        return False
     
     def scrape_subreddit_posts(self, subreddit_name: str, limit: int = 100) -> List[Dict]:
         """Scrape hot posts from a subreddit"""
@@ -69,6 +102,11 @@ class RedditScraper:
                 # Skip stickied posts
                 if post.stickied:
                     continue
+                
+                # Filter news posts for financial relevance
+                if category == 'NEWS':
+                    if not self.is_financially_relevant(post.title, post.selftext):
+                        continue
                 
                 post_data = {
                     'id': post.id,
@@ -170,9 +208,9 @@ class RedditScraper:
             success = self.s3_uploader.upload_dataframe(df, filename)
             
             if success:
-                print(f"✅ Successfully uploaded {len(df)} records to S3: {filename}")
+                print(f"Successfully uploaded {len(df)} records to S3: {filename}")
             else:
-                print("❌ Failed to upload to S3")
+                print("Failed to upload to S3")
                 
         except Exception as e:
             print(f"Error in scrape and upload: {e}")
