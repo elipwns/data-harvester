@@ -4,6 +4,9 @@ __pycache__/
 .serverless/
 node_modules/
 automation_log.txt
+test_*.py
+debug_*.py
+check_*.py
 
 # Terraform
 .terraform/

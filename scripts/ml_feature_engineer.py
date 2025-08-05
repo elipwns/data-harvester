@@ -286,7 +286,7 @@ class MLFeatureEngineer:
         else:
             print("❌ Failed to save ML dataset")
     
-    def run_feature_engineering(self, symbols=['BTC', 'ETH']):
+    def run_feature_engineering(self, symbols=['BTC']):
         """Main execution: create ML datasets for specified symbols"""
         print("=== ML Feature Engineering Started ===")
         
@@ -318,4 +318,4 @@ class MLFeatureEngineer:
 
 if __name__ == "__main__":
     engineer = MLFeatureEngineer()
-    engineer.run_feature_engineering()
+    engineer.run_feature_engineering(['BTC'])
