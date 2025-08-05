@@ -41,7 +41,7 @@ class TrendingDetector:
             # Popular stocks
             'TSLA', 'AAPL', 'NVDA', 'MSFT', 'GOOGL', 'META', 'AMZN', 'NFLX',
             # Recent IPOs/SPACs
-            'RIVN', 'LCID', 'HOOD', 'COIN', 'RBLX', 'SNOW', 'ABNB'
+            'RIVN', 'LCID', 'HOOD', 'COIN', 'RBLX', 'SNOW', 'ABNB', 'BLSH'
         ]
     
     def load_recent_reddit_data(self, days=7):

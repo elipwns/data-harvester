@@ -27,9 +27,9 @@ class RedditScraper:
         
         # Financial keywords for filtering news posts
         self.financial_keywords = {
-            'companies': ['tesla', 'apple', 'microsoft', 'google', 'amazon', 'meta', 'nvidia', 'bitcoin', 'ethereum'],
-            'tickers': ['tsla', 'aapl', 'msft', 'googl', 'amzn', 'meta', 'nvda', 'btc', 'eth'],
-            'financial_terms': ['stock', 'shares', 'earnings', 'revenue', 'profit', 'market', 'trading', 'investment', 'crypto', 'ipo']
+            'companies': ['tesla', 'apple', 'microsoft', 'google', 'amazon', 'meta', 'nvidia', 'bitcoin', 'ethereum', 'bullish'],
+            'tickers': ['tsla', 'aapl', 'msft', 'googl', 'amzn', 'meta', 'nvda', 'btc', 'eth', 'blsh'],
+            'financial_terms': ['stock', 'shares', 'earnings', 'revenue', 'profit', 'market', 'trading', 'investment', 'crypto', 'ipo', 'bullish']
         }
         
         # Financial subreddits organized by market category
@@ -46,7 +46,14 @@ class RedditScraper:
                 'thetagang',         # Options selling strategies
                 'wsbafterhours',     # After-hours WSB discussion
                 'wallstreetbetselite', # WSB alternative
-                'options'            # Options trading
+                'options',           # Options trading
+                'RobinHood'          # Robinhood app users
+            ],
+            'IPOS': [
+                'SecurityAnalysis',  # IPO analysis
+                'investing',         # IPO discussions
+                'stocks',           # IPO coverage
+                'RobinHood'         # IPO notifications
             ],
             'CRYPTO': [
                 'cryptocurrency',   # General crypto discussion
