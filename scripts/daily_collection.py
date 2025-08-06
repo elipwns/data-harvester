@@ -30,6 +30,24 @@ def main():
     price_collector = PriceCollector()
     price_collector.run_collection_and_upload()
     
+    # Collect Fear & Greed Index
+    print("\n4. Collecting Fear & Greed Index...")
+    try:
+        from fear_greed_collector import FearGreedCollector
+        fear_greed_collector = FearGreedCollector()
+        fear_greed_collector.run_collection_and_upload()
+    except Exception as e:
+        print(f"Fear & Greed collection failed (non-critical): {e}")
+    
+    # Collect Basic Options Data
+    print("\n5. Collecting options contracts...")
+    try:
+        from basic_options_collector import BasicOptionsCollector
+        options_collector = BasicOptionsCollector()
+        options_collector.run_collection_and_upload()
+    except Exception as e:
+        print(f"Options collection failed (non-critical): {e}")
+    
     print("\nDaily collection complete!")
     print("Next: Run AI workbench to process the data")
 
