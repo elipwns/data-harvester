@@ -12,6 +12,7 @@ import sys
 from typing import List, Dict
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.s3_uploader import S3Uploader
+from utils.deduplicator import DataDeduplicator
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -24,6 +25,7 @@ class RedditScraper:
             user_agent=os.getenv('REDDIT_USER_AGENT', 'TradingBot/1.0')
         )
         self.s3_uploader = S3Uploader()
+        self.deduplicator = DataDeduplicator()
         
         # Financial keywords for filtering news posts
         self.financial_keywords = {
@@ -59,7 +61,19 @@ class RedditScraper:
                 'cryptocurrency',   # General crypto discussion
                 'Bitcoin',          # Bitcoin specific
                 'ethereum',         # Ethereum specific
-                'CryptoMarkets'     # Crypto trading focused
+                'Monero',           # Monero/XMR specific
+                'litecoin',         # Litecoin/LTC specific
+                'CryptoMarkets',    # Crypto trading focused
+                'xmrtrader',        # Monero trading
+                'LitecoinMarkets',  # Litecoin trading
+                'btc',              # Bitcoin alternative
+                'ethtrader',        # Ethereum trading
+                'ethfinance',       # Ethereum finance
+                'CryptoCurrency',   # Alternative crypto sub
+                'BitcoinMarkets',   # Bitcoin trading
+                'CryptoMoonShots',  # Small cap crypto
+                'altcoin',          # Alternative coins
+                'defi'              # DeFi discussions
             ],
             'ECONOMICS': [
                 'economics',        # Economic policy/macro
@@ -206,6 +220,13 @@ class RedditScraper:
             if df.empty:
                 print("No data scraped")
                 return
+            
+            # Remove duplicates (temporarily disabled due to S3 access issues)
+            # df = self.deduplicator.remove_duplicates(df)
+            # 
+            # if df.empty:
+            #     print("No new data after deduplication")
+            #     return
             
             # Generate filename with timestamp
             timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
