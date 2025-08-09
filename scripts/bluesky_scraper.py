@@ -14,6 +14,7 @@ import re
 import json
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.s3_uploader import S3Uploader
+from utils.deduplicator import DataDeduplicator
 from dotenv import load_dotenv
 import time
 
@@ -22,6 +23,7 @@ load_dotenv()
 class BlueskyScraper:
     def __init__(self):
         self.s3_uploader = S3Uploader()
+        self.deduplicator = DataDeduplicator()
         self.base_url = "https://bsky.social/xrpc"
         self.access_token = None
         self.refresh_token = None
@@ -216,6 +218,13 @@ class BlueskyScraper:
             if df.empty:
                 print("No Bluesky data scraped")
                 return
+            
+            # Remove duplicates (temporarily disabled due to S3 access issues)
+            # df = self.deduplicator.remove_duplicates(df)
+            # 
+            # if df.empty:
+            #     print("No new Bluesky data after deduplication")
+            #     return
             
             # Generate filename with timestamp
             timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')

@@ -24,6 +24,8 @@ class PriceCollector:
             'CRYPTO': {
                 'BTC': 'bitcoin',
                 'ETH': 'ethereum',
+                'XMR': 'monero',
+                'LTC': 'litecoin',
                 'CRYPTO_MARKET_CAP': 'total_market_cap'
             },
             'US_STOCKS': {
@@ -42,7 +44,7 @@ class PriceCollector:
             # Enhanced CoinGecko API call with more data
             url = "https://api.coingecko.com/api/v3/simple/price"
             params = {
-                'ids': 'bitcoin,ethereum',
+                'ids': 'bitcoin,ethereum,monero,litecoin',
                 'vs_currencies': 'usd',
                 'include_market_cap': 'true',
                 'include_24hr_change': 'true',
@@ -56,7 +58,13 @@ class PriceCollector:
             
             # Format crypto data with ML features
             for coin_id, coin_data in data.items():
-                symbol = 'BTC' if coin_id == 'bitcoin' else 'ETH'
+                symbol_map = {
+                    'bitcoin': 'BTC',
+                    'ethereum': 'ETH', 
+                    'monero': 'XMR',
+                    'litecoin': 'LTC'
+                }
+                symbol = symbol_map.get(coin_id, coin_id.upper())
                 price = coin_data['usd']
                 volume_24h = coin_data.get('usd_24h_vol', 0)
                 change_24h = coin_data.get('usd_24h_change', 0)
