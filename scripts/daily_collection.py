@@ -39,14 +39,7 @@ def main():
     except Exception as e:
         print(f"Fear & Greed collection failed (non-critical): {e}")
     
-    # Collect Basic Options Data
-    print("\n5. Collecting options contracts...")
-    try:
-        from basic_options_collector import BasicOptionsCollector
-        options_collector = BasicOptionsCollector()
-        options_collector.run_collection_and_upload()
-    except Exception as e:
-        print(f"Options collection failed (non-critical): {e}")
+    # Options collection removed - not providing valuable insights
     
     print("\nDaily collection complete!")
     print("Next: Run AI workbench to process the data")

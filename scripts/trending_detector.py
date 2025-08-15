@@ -15,6 +15,7 @@ from utils.s3_uploader import S3Uploader
 from dotenv import load_dotenv
 import boto3
 from io import StringIO
+import json
 
 load_dotenv()
 
@@ -24,6 +25,21 @@ class TrendingDetector:
         self.bucket_name = os.getenv('S3_BUCKET_NAME')
         self.s3_uploader = S3Uploader()
         
+    def get_user_watchlists(self):
+        """Load user watchlists from S3"""
+        try:
+            response = self.s3_client.get_object(
+                Bucket=self.bucket_name,
+                Key="user_data/watchlists.json"
+            )
+            data = json.loads(response['Body'].read().decode('utf-8'))
+            all_stocks = set()
+            for user_data in data["users"].values():
+                all_stocks.update(user_data.get("stocks", []))
+            return list(all_stocks)
+        except:
+            return []
+    
         # Signal weights for composite scoring
         self.signals = {
             'reddit_mentions': 0.4,      # 40% weight - primary signal
@@ -32,8 +48,8 @@ class TrendingDetector:
             'sentiment_shift': 0.1       # 10% weight - sentiment change
         }
         
-        # Common stock/crypto symbols to track
-        self.tracked_symbols = [
+        # Base symbols to always track
+        self.base_symbols = [
             # Meme stocks
             'GME', 'AMC', 'BBBY', 'NOK', 'BB', 'PLTR', 'WISH', 'CLOV',
             # Crypto
@@ -43,6 +59,9 @@ class TrendingDetector:
             # Recent IPOs/SPACs
             'RIVN', 'LCID', 'HOOD', 'COIN', 'RBLX', 'SNOW', 'ABNB', 'BLSH'
         ]
+        
+        # Get user watchlists
+        self.tracked_symbols = self.base_symbols + self.get_user_watchlists()
     
     def load_recent_reddit_data(self, days=7):
         """Load recent Reddit data from S3"""
