@@ -39,7 +39,40 @@ def main():
     except Exception as e:
         print(f"Fear & Greed collection failed (non-critical): {e}")
     
-    # Options collection removed - not providing valuable insights
+    # Monthly predictions (run on 1st of month)
+    print("\n5. Checking monthly predictions...")
+    try:
+        import sys
+        import os
+        sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'ai-workbench'))
+        from monthly_predictor import MonthlyPredictor
+        
+        current_date = datetime.utcnow()
+        
+        # Run monthly cycle on 1st of month or if no predictions exist for next month
+        predictor = MonthlyPredictor()
+        history = predictor.load_predictions_history()
+        
+        next_month = current_date.replace(day=1)
+        if current_date.month == 12:
+            next_month = next_month.replace(year=current_date.year + 1, month=1)
+        else:
+            next_month = next_month.replace(month=current_date.month + 1)
+        
+        next_month_str = next_month.strftime('%Y-%m')
+        
+        # Check if prediction exists for next month
+        has_prediction = any(p['target_month'] == next_month_str for p in history.get('predictions', []))
+        
+        if current_date.day == 1 or not has_prediction:
+            print(f"Running monthly prediction cycle for {next_month_str}...")
+            predictor.run_monthly_prediction_cycle(['BTC'])
+            print("Monthly predictions updated!")
+        else:
+            print(f"Monthly prediction for {next_month_str} already exists")
+            
+    except Exception as e:
+        print(f"Monthly prediction failed (non-critical): {e}")
     
     print("\nDaily collection complete!")
     print("Next: Run AI workbench to process the data")
