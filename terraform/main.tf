@@ -9,6 +9,14 @@ terraform {
 
 provider "aws" {
   region = var.aws_region
+  
+  default_tags {
+    tags = {
+      ManagedBy     = "Terraform"
+      Project       = "automated-trading"
+      TerraformRepo = "github.com/elipwns/automated-trading/data-harvester"
+    }
+  }
 }
 
 resource "aws_s3_bucket" "data_bucket" {
