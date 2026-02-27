@@ -12,4 +12,4 @@ check_*.py
 .terraform/
 *.tfstate
 *.tfstate.backup
-*.tfvars
+*.tfvars*.log
